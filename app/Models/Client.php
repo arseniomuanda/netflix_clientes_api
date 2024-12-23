@@ -24,6 +24,7 @@ class Client extends Model
         'created_by',
     ];
 
+    protected $append = ['screens'];
     protected static function booted()
     {
         static::creating(function ($model) {
@@ -36,5 +37,9 @@ class Client extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function getScreensAttribute() {
+        return $this->hasMany(Screen::class);
     }
 }

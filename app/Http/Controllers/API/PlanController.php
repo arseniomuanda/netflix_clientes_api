@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\Controller;
 use App\Models\Plan;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpFoundation\Response;
 
 class PlanController extends Controller
@@ -31,14 +32,14 @@ class PlanController extends Controller
         try {
             // Validação dos dados
             $validated = $request->validate([
-                'discriptions' => 'nullable|string|max:255',
+                'discription' => 'required|string|max:255',
                 'value' => 'required|numeric',
                 'days' => 'required|integer',
             ]);
 
             // Criação do plano
             $plan = Plan::create([
-                'discriptions' => $validated['discriptions'],
+                'discription' => $validated['discription'],
                 'value' => $validated['value'],
                 'days' => $validated['days'],
                 'created_by' => Auth::id(), // Usuário autenticado
@@ -85,14 +86,14 @@ class PlanController extends Controller
 
             // Validação dos dados
             $validated = $request->validate([
-                'discriptions' => 'nullable|string|max:255',
+                'discription' => 'nullable|string|max:255',
                 'value' => 'required|numeric',
                 'days' => 'required|integer',
             ]);
 
             // Atualização do plano
             $plan->update([
-                'discriptions' => $validated['discriptions'],
+                'discription' => $validated['discriptions'],
                 'value' => $validated['value'],
                 'days' => $validated['days'],
             ]);

@@ -3,30 +3,32 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Service;
+use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class ServiceController extends Controller
+class AccountController extends Controller
 {
     public function index()
     {
-        return response()->json(Service::all(), 200);
+        return response()->json(Account::all(), 200);
     }
 
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:100',
-                'abreviation' => 'required|string|max:10',
-                'logo' => 'nullable|string|max:255',
-                'created_by' => 'required|uuid|exists:users,id',
+                'name' => 'nullable|string|max:100',
+                'username' => 'required|email|max:150|unique:accounts,username',
+                'password' => 'nullable|string|max:100',
             ]);
 
-            $service = Service::create($validated);
+            $validated['created_by'] = auth()->id();
 
-            return response()->json($service, 201);
+
+            $account = Account::create($validated);
+
+            return response()->json($account, 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
@@ -37,25 +39,25 @@ class ServiceController extends Controller
 
     public function show($id)
     {
-        $service = Service::findOrFail($id);
+        $account = Account::findOrFail($id);
 
-        return response()->json($service, 200);
+        return response()->json($account, 200);
     }
 
     public function update(Request $request, $id)
     {
-        $service = Service::findOrFail($id);
+        $account = Account::findOrFail($id);
 
         try {
             $validated = $request->validate([
-                'name' => 'sometimes|required|string|max:100',
-                'abreviation' => 'sometimes|required|string|max:10',
-                'logo' => 'nullable|string|max:255',
+                'name' => 'nullable|string|max:100',
+                'username' => 'required|email|max:150|unique:accounts,email',
+                'password' => 'nullable|string|max:100',
             ]);
 
-            $service->update($validated);
+            $account->update($validated);
 
-            return response()->json($service, 200);
+            return response()->json($account, 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
@@ -66,9 +68,9 @@ class ServiceController extends Controller
 
     public function destroy($id)
     {
-        $service = Service::findOrFail($id);
+        $account = Account::findOrFail($id);
 
-        $service->delete();
+        $account->delete();
 
         return response()->json(null, 204);
     }

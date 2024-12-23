@@ -15,7 +15,7 @@ class Account extends Model
     protected $fillable = [
         'name',
         'username',
-        'password',
+        'password','created_by'
     ];
 
     protected static function booted()
