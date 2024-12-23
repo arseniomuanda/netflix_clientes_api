@@ -27,7 +27,6 @@ class Subscribe extends Model
     protected $appends = [
         'client_name',
         'service_name',
-        'formatted_dates'
     ];
 
     protected static function booted()
@@ -39,17 +38,17 @@ class Subscribe extends Model
         });
     }
 
-    public function client()
+    public function getClient()
     {
         return $this->belongsTo(Client::class, 'client');
     }
 
-    public function service()
+    public function getService()
     {
         return $this->belongsTo(Service::class, 'service');
     }
 
-    public function screen()
+    public function getScreen()
     {
         return $this->belongsTo(Screen::class, 'screen');
     }
@@ -61,19 +60,11 @@ class Subscribe extends Model
 
     public function getClientNameAttribute()
     {
-        return $this->client ? $this->client->name : null;
+        return $this->getClient ? $this->getClient->name : null;
     }
 
     public function getServiceNameAttribute()
     {
-        return $this->service ? $this->service->name : null;
-    }
-
-    public function getFormattedDatesAttribute()
-    {
-        return [
-            'start' => $this->start ? $this->start->format('Y-m-d') : null,
-            'end' => $this->end ? $this->end->format('Y-m-d') : null,
-        ];
+        return $this->getService ? $this->getService->name : null;
     }
 }

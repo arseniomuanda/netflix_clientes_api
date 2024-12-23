@@ -16,7 +16,7 @@ class Plan extends Model
 
     protected $fillable = [
         'id',
-        'discriptions',
+        'discription',
         'value',
         'days',
         'created_by'

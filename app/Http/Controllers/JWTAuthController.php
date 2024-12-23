@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -39,23 +40,41 @@ class JWTAuthController extends Controller
     // User login
     public function login(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $credentials = $request->only('email', 'password');
 
-        try {
-            if (!$token = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => 'Invalid credentials'], 401);
-            }
-            
+        if (Auth::attempt($credentials)) {
+
+            $tTL = config('jwt.ttl');
+            $expiresAt = Carbon::now()->addMinutes($tTL);
+
             // Get the authenticated user.
-            $user = auth()->user();
+            $user = Auth::user();
 
-            // (optional) Attach the role to the token.
-            $token = JWTAuth::claims(['role' => $user->role])->fromUser($user);
+            $token = JWTAuth::fromUser($user, [
+                'email' => $user->email,
+                'name' => $user->name,
+                'id' => $user->id
+            ]);
 
-            return response()->json(compact('token'));
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Could not create token'], 500);
+            return response()->json([
+                'email' => $user->email,
+                'name' => $user->name,
+                'photo' => $user->photo,
+                'token' => $token,
+                'expired_at' => $expiresAt->toDateTimeString(), // Formata o tempo de expiração para uma string
+            ]);
         }
+        return response()->json('Credenciais inválidas', 401);
+
     }
 
     // Get authenticated user

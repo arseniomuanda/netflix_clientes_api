@@ -15,8 +15,8 @@ return new class extends Migration
             $table->uuid('id')->primary();
 
             $table->string('name', 100);
-            $table->string('phone', 9)->nullable();
-            $table->string('photo', 255);
+            $table->string('phone', 9);
+            $table->string('photo', 255)->nullable();
             $table->string('whatsapp', 19)->nullable()->unique();
             $table->string('email', 150)->nullable()->unique();
 

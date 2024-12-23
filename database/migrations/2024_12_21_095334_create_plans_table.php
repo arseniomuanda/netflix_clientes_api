@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('plans', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-            $table->string('discriptions')->nullable();
+            $table->string('discription');
             $table->double('value');
 
             $table->integer('days');

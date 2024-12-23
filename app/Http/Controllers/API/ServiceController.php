@@ -3,29 +3,33 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Client;
+use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class ScreenController extends Controller
+class ServiceController extends Controller
 {
     public function index()
     {
-        return response()->json(Client::all(), 200);
+        return response()->json(Service::all(), 200);
     }
 
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:20',
-                'account' => 'required|exists:accounts,id',
-                'client' => 'required|exists:clients,id',
+                'name' => 'required|string|max:100',
+                'abreviation' => 'required|string|max:10',
+                'logo' => 'nullable|string|max:255',
             ]);
 
-            $client = Client::create($validated);
+            $validated['created_by'] = auth()->id();
 
-            return response()->json($client, 201);
+            //return response()->json($validated);
+
+            $service = Service::create($validated);
+
+            return response()->json($service, 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
@@ -36,25 +40,25 @@ class ScreenController extends Controller
 
     public function show($id)
     {
-        $client = Client::findOrFail($id);
+        $service = Service::findOrFail($id);
 
-        return response()->json($client, 200);
+        return response()->json($service, 200);
     }
 
     public function update(Request $request, $id)
     {
-        $client = Client::findOrFail($id);
+        $service = Service::findOrFail($id);
 
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:20',
-                'account' => 'required|exists:accounts,id',
-                'client' => 'required|exists:clients,id'
+                'name' => 'sometimes|required|string|max:100',
+                'abreviation' => 'sometimes|required|string|max:10',
+                'logo' => 'nullable|string|max:255',
             ]);
 
-            $client->update($validated);
+            $service->update($validated);
 
-            return response()->json($client, 200);
+            return response()->json($service, 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
@@ -65,9 +69,9 @@ class ScreenController extends Controller
 
     public function destroy($id)
     {
-        $client = Client::findOrFail($id);
+        $service = Service::findOrFail($id);
 
-        $client->delete();
+        $service->delete();
 
         return response()->json(null, 204);
     }

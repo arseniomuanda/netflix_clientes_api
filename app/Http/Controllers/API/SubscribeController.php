@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plan;
 use App\Models\Subscribe;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
@@ -17,8 +19,9 @@ class SubscribeController extends Controller
     public function index()
     {
         try {
-            $subscribes = Subscribe::with(['client', 'service', 'screen', 'creator'])->get();
-            return response()->json($subscribes);
+            //$subscribes = Subscribe::with(['client', 'service', 'screen', 'creator'])->get();
+            $subscribes = Subscribe::all();
+            return response()->json();
         } catch (Exception $e) {
             return response()->json(['error' => 'Failed to fetch subscribes', 'details' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -33,17 +36,36 @@ class SubscribeController extends Controller
             $validator = Validator::make($request->all(), [
                 'client' => 'required|exists:clients,id',
                 'service' => 'required|exists:services,id',
-                'screen' => 'nullable|exists:screens,id',
-                'start' => 'required|date',
-                'end' => 'required|date|after_or_equal:start',
-                'created_by' => 'required|exists:users,id',
+                'screen' => 'required|exists:screens,id',
+                'plan' => 'required'
+                //'start' => 'required|date',
+                //'end' => 'required|date|after_or_equal:start',
             ]);
 
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
-            $subscribe = Subscribe::create($request->all());
+            $data = $request->all();
+            $data['created_by'] = auth()->id();
+
+            $plan = Plan::find($data['plan']);
+
+            $latestSubscription = Subscribe::where('client', $data['client'])
+                ->where('screen',  $data['screen'])
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            if (isset($latestSubscription->end)) {
+                if (Carbon::now()->gt(Carbon::create($latestSubscription->end))) {
+                    unset($latestSubscription);
+                }
+            }
+
+            $data['start'] = isset($latestSubscription->end) ? Carbon::create($latestSubscription->end)->addDay() : Carbon::now();
+            $data['end']= isset($latestSubscription->end) ? Carbon::create($latestSubscription->end)->addDay()->addDays($plan->days) :  Carbon::now()->addDays($plan->days);
+
+            $subscribe = Subscribe::create($data);
 
             return response()->json($subscribe, Response::HTTP_CREATED);
         } catch (Exception $e) {

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
 
             $table->string('name', 20);
+            $table->string('pin', 4);
 
             $table->uuid('account');
             $table->foreign('account')->references('id')->on('accounts');
@@ -26,6 +27,7 @@ return new class extends Migration
             $table->foreign('created_by')->references('id')->on('users');
 
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

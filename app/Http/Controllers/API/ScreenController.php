@@ -3,29 +3,32 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Account;
+use App\Models\Screen;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class AccountController extends Controller
+class ScreenController extends Controller
 {
     public function index()
     {
-        return response()->json(Account::all(), 200);
+        return response()->json(Screen::all(), 200);
     }
 
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
-                'name' => 'nullable|string|max:100',
-                'username' => 'required|email|max:150|unique:accounts,email',
-                'password' => 'nullable|string|max:100',
+                'name' => 'required|string|max:20',
+                'account' => 'required|exists:accounts,id',
+                'client' => 'required|exists:clients,id',
+                'pin' => 'nullable|numeric|digits:4'
             ]);
 
-            $account = Account::create($validated);
+            $validated['created_by'] = auth()->id();
 
-            return response()->json($account, 201);
+            $screen = Screen::create($validated);
+
+            return response()->json($screen, 201);
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
@@ -36,25 +39,26 @@ class AccountController extends Controller
 
     public function show($id)
     {
-        $account = Account::findOrFail($id);
+        $screen = Screen::findOrFail($id);
 
-        return response()->json($account, 200);
+        return response()->json($screen, 200);
     }
 
     public function update(Request $request, $id)
     {
-        $account = Account::findOrFail($id);
+        $screen = Screen::findOrFail($id);
 
         try {
             $validated = $request->validate([
-                'name' => 'nullable|string|max:100',
-                'username' => 'required|email|max:150|unique:accounts,email',
-                'password' => 'nullable|string|max:100',
+                'name' => 'required|string|max:20',
+                'account' => 'required|exists:accounts,id',
+                'client' => 'required|exists:clients,id',
+                'pin' => 'nullable|numeric|digits:4'
             ]);
 
-            $account->update($validated);
+            $screen->update($validated);
 
-            return response()->json($account, 200);
+            return response()->json($screen, 200);
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
@@ -65,9 +69,9 @@ class AccountController extends Controller
 
     public function destroy($id)
     {
-        $account = Account::findOrFail($id);
+        $screen = Screen::findOrFail($id);
 
-        $account->delete();
+        $screen->delete();
 
         return response()->json(null, 204);
     }

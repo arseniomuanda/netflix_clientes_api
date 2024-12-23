@@ -19,12 +19,16 @@ class ClientController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:100',
-                'phone' => 'nullable|string|size:9',
-                'photo' => 'required|string|max:255',
+                'phone' => 'required|string|size:9',
+                'photo' => 'nullable|file',
                 'whatsapp' => 'nullable|string|max:19|unique:clients,whatsapp',
                 'email' => 'nullable|email|max:150|unique:clients,email',
-                'created_by' => 'required|uuid|exists:users,id',
             ]);
+
+            //return response()->json($user);
+
+            $validated['created_by'] = auth()->id();
+
 
             $client = Client::create($validated);
 

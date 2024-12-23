@@ -18,7 +18,8 @@ class Screen extends Model
         'name',
         'account',
         'client',
-        'created_by'
+        'created_by',
+        'pin'
     ];
 
     protected static function booted()
